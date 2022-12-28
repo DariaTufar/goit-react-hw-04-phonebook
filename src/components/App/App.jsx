@@ -1,45 +1,46 @@
-import React, { Component } from 'react';
+import React, {useState, useEffect, useRef } from 'react';
 import { nanoid } from 'nanoid';
 
 import { ContactList } from 'components/ContactList';
 import { Box } from '../Box';
 import { Section } from '../Section';
 import { ContactForm } from '../ContactForm';
-import {Filter} from '../Filter'
+import { Filter } from '../Filter';
  import background from '../../images/background_blue_abstract.jpg';
+ 
 
 const LS_CONTACT_KEY= 'contacts'
-const initialContacts = [
-  // { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-  // { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-  // { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-  // { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-];
+const initialContacts = [];
 
-export class App extends Component {
-  state = {
-    contacts: initialContacts,
-    filter:'',
-  };
-  //=============================================
 
-  componentDidMount() {
+export const App =()=> {
+  
+  const [contacts, setContacts] = useState(initialContacts);
+  const [filter, setFilter] = useState('')
+  const isFirstRender = useRef(true);
+  //===== getting contacts from Local Storage, only first render ========================================
+
+  useEffect(() => {
     const localStorageContacts = JSON.parse(localStorage.getItem(LS_CONTACT_KEY));
     if (localStorageContacts) {
-      this.setState({ contacts: localStorageContacts });
+      setContacts(localStorageContacts)
     }
-  }
-  //============================================
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem(LS_CONTACT_KEY, JSON.stringify(this.state.contacts));
+  }, []
+  );
+  //======= saving contacts to Local Storage =====================================
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
-  }
+    localStorage.setItem(LS_CONTACT_KEY, JSON.stringify(contacts));
+  }, [contacts]
+  );
 
-//----------------------------------
-  addContact = ({ name, number }) => {
+  // ===================function for adding contacts ===================================
+  const addContact = ({ name, number }) => {
     const searchingName = name.toLowerCase().trim();
-    const foundName = this.state.contacts.find(
+    const foundName = contacts.find(
       contact => contact.name.toLowerCase().trim() === searchingName
     );
 
@@ -53,62 +54,60 @@ export class App extends Component {
       number: number.trim(),
     };
 
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, newContact],
-    }));
+    setContacts(prevContacts => [...prevContacts, newContact]);
   };
 
-  deleteContact = id => {
-    this.setState(prevState => {
-      const contacts = prevState.contacts.filter(contact => contact.id !== id);
-      return { contacts };
+
+  // ========== function for deleting contacts ================================================
+  const deleteContact = id => {
+    setContacts(prevContacts => {
+      prevContacts.filter(contact => contact.id !== id);
     });
   };
-
-  handleUpdateFilter = event => {
+  // ============== search for a contact (filter  phonebook by name) ========================================
+  const handleUpdateFilter = event => {
     const filter = event.target.value.toLowerCase();
-    this.setState({ filter });
+    setFilter(filter);
   };
 
-  showFilteredContacts = () => {
-    let { contacts, filter } = this.state;
-    filter = filter.trim();
-    return filter
-      ? contacts.filter(contact => contact.name.toLowerCase().includes(filter))
+  const showFilteredContacts = () => {
+    let filterTrimed = filter.trim();
+    return filterTrimed
+      ? contacts.filter(contact => contact.name.toLowerCase().includes(filterTrimed))
       : contacts;
   };
-//----------------------------------------
-  render() {
-    return (
-      <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-      
-      >
-        <Box
-          style={{
-            backgroundImage: `url(${background})`, 
-            backgroundSize: 'cover'
-          }}
-          
-        >
-          <Section title="Phonebook">
-            <ContactForm addContact={this.addContact} />
-          </Section>
-        </Box>
-        <Section title="Contacts"  >
-          <Filter
-            handleUpdateFilter={this.handleUpdateFilter}
-            filteredValue={this.state.filter}
-          />
+  //----------------------------------------
 
-          <ContactList
-            filteredContacts={this.showFilteredContacts()}
-            deleteContact={this.deleteContact}
-          />
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      
+    >
+      <Box
+        style={{
+          backgroundImage: `url(${background})`,
+          backgroundSize: 'cover'
+        }}
+          
+      >
+        <Section title="Phonebook">
+          <ContactForm addContact={addContact} />
         </Section>
       </Box>
-    );
-  }
-}
+      <Section title="Contacts"  >
+        <Filter
+          handleUpdateFilter={handleUpdateFilter}
+          filteredValue={filter}
+        />
+
+        <ContactList
+          filteredContacts={showFilteredContacts()}
+          deleteContact={deleteContact}
+        />
+      </Section>
+    </Box>
+  );
+}   
+
