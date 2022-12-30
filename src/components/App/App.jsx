@@ -60,10 +60,10 @@ export const App =()=> {
 
   // ========== function for deleting contacts ================================================
   const deleteContact = id => {
-    setContacts(prevContacts => {
-      prevContacts.filter(contact => contact.id !== id);
-    });
+    setContacts(prevContacts => 
+      prevContacts.filter(contact => contact.id !== id));
   };
+
   // ============== search for a contact (filter  phonebook by name) ========================================
   const handleUpdateFilter = event => {
     const filter = event.target.value.toLowerCase();
@@ -72,6 +72,7 @@ export const App =()=> {
 
   const showFilteredContacts = () => {
     let filterTrimed = filter.trim();
+     
     return filterTrimed
       ? contacts.filter(contact => contact.name.toLowerCase().includes(filterTrimed))
       : contacts;

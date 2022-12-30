@@ -3,14 +3,16 @@ import { Contact } from '../Contact';
 import { ContactsUl } from './ContactList.styled';
 
 export const ContactList = ({ filteredContacts, deleteContact }) => {
+    
     return (
         <ContactsUl>
-            {filteredContacts.map( contact  => (
-                <Contact key={contact.id}
-                    id={contact.id}
-                    name={contact.name}
-                    number={contact.number}
-                deleteContact={deleteContact}
+            {filteredContacts.map(({ id, name, number})  => (
+                <Contact
+                    key={id}
+                    id={id}
+                    name={name}
+                    number={number}
+                deleteContact = {() => deleteContact(id) }
                 />
             )
             )}
